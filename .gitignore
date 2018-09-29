@@ -1,0 +1,4 @@
+# ignore the data folder
+data/
+venv/
+.idea/
