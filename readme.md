@@ -1,5 +1,21 @@
 # Chromotypage
 
+# Pipeline
+
+## Classification
+
+- adjust histogram for better contrast
+- rescale pictures to identical size
+- run PCA to reduce dimensions
+- classify with KNN
+
+## Training
+
+- adjust histogram and rescale all pictures
+- split picture into training dataset (80%) and testing dataset (20%)
+- train PCA and save reduced pictures
+- train KNN and crossvalidate to identify optimal K and composant number
+
 # Task
 
 - Given a picture, returns one of the 24 possible labels.
