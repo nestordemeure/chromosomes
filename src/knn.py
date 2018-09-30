@@ -40,6 +40,14 @@ def crop_axis(points, axis_number):
     """keeps only the axis_number most important axis"""
     return [point[:axis_number] for point in points]
 
+def max_sample_size(dataset):
+    """extract the length of the smallest label"""
+    result = float('inf')
+    for label, points in dataset:
+        result = min(result, len(points))
+    print("The maximum possible sample size for the dataset is {n}".format(n=result))
+    return result
+
 #--------------------------------------------------------------------------------------------------
 # KNN
 
@@ -57,33 +65,42 @@ def cross_validate(input_folder, max_neighbours_number, max_axe_number, trainlab
     score = 0
     bestk = 0
     besta = 0
-    for a in reversed(range(1,max_axe_number)):
+    scores = []
+    ks = []
+    axes = []
+    for a in reversed(range(1,max_axe_number, 5)):
         trainpoints = crop_axis(trainpoints, a)
         testpoints = crop_axis(testpoints, a)
         for k in range(1, max_neighbours_number, 2):
             new_score = score_model(input_folder, k, a, trainlabels, trainpoints, testlabels, testpoints)
+            scores.append(new_score)
+            ks.append(k)
+            axes.append(a)
             if new_score > score:
                 score = new_score
                 bestk = k
                 besta = a
-    print("The best score was {s} which is atteigned for k={k} and {a} axis.".format(s=score, k=bestk, a=besta))
-    return (bestk,besta,score)
+    save_data((scores, ks, axes), input_folder + "ska.scores")
+    print("The best score was {s} which is reached at k={k} and {a} axis.".format(s=score, k=bestk, a=besta))
+    return scores, ks, axes
 
 #--------------------------------------------------------------------------------------------------
 # TEST
 
 input_folder = "./png_scaled_contrast_data/" + "preprocessed/"
-sample_size = 1865  # sample size to train KNN
-#neighbours_number = 6
-#axe_number = 45
+train_sample_size = 1865
+test_sample_size = 467
 
 trainset = load_data(input_folder + "training/" + "compressed/" + "dataset.pfull")
-trainlabels, trainpoints = extract_trainset(trainset, sample_size)
+#train_sample_size = max_sample_size(trainset)
+trainlabels, trainpoints = extract_trainset(trainset, train_sample_size)
 
 testset = load_data(input_folder + "testing/" + "compressed/" + "dataset.pfull")
-testlabels, testpoints = extract_trainset(testset)
+#test_sample_size = max_sample_size(testset)
+testlabels, testpoints = extract_trainset(testset, test_sample_size)
 
-max_neighbours_number = 12
-max_axe_number = 70
-neighbours_number, axe_number, score = cross_validate(input_folder, max_neighbours_number, max_axe_number,
-                                                      trainlabels, trainpoints, testlabels, testpoints)
+max_neighbours_number = 50
+max_axe_number = 80
+scores, neigbours, axes = cross_validate(input_folder, max_neighbours_number, max_axe_number,
+                                         trainlabels, trainpoints, testlabels, testpoints)
+#scores, neigbours, axes = load_data(input_folder + "model/" + "ska.scores")
