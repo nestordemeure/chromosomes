@@ -6,6 +6,7 @@ import random  # for sampling
 import os  # folder creation
 from sklearn.decomposition import IncrementalPCA  # pca
 import matplotlib.pyplot as plot  # for display
+from sklearn.neighbors import KNeighborsClassifier
 
 #--------------------------------------------------------------------------------------------------
 # SAVING
@@ -121,9 +122,9 @@ def displays_dataset(dataset):
 # TEST
 
 input_folder = "./png_scaled_contrast_data/"
-training_proportion = 0.8
-sample_size = 1865
-composant_number = 80
+training_proportion = 0.8  # fraction of the dataset that will be used for training
+sample_size = 1865  # sample size to train PCA and knn
+composant_number = 80  # number of composants kept after compression
 
 #preprocess_data(input_folder)
 #sample_size = split_data(input_folder + "preprocessed/", training_proportion)
@@ -131,9 +132,13 @@ composant_number = 80
 #pca = train_pca(input_folder + "preprocessed/" + "training/", sample_size)
 #pca = load_data(input_folder + "preprocessed/" + "training/" + "pca_{n}.pca".format(n=sample_size))
 #variance_explained_by(pca, composant_number)
+
 #compress_data(input_folder + "preprocessed/" + "training/", pca, composant_number)
-
 #dataset = fuse_dataset(input_folder + "preprocessed/" + "training/" + "compressed/")
-dataset = load_data(input_folder + "preprocessed/" + "training/" + "compressed/" + "dataset.pfull")
-#displays_dataset(dataset)
+#dataset = load_data(input_folder + "preprocessed/" + "training/" + "compressed/" + "dataset.pfull")
 
+#compress_data(input_folder + "preprocessed/" + "testing/", pca, composant_number)
+#dataset = fuse_dataset(input_folder + "preprocessed/" + "testing/" + "compressed/")
+#dataset = load_data(input_folder + "preprocessed/" + "testing/" + "compressed/" + "dataset.pfull")
+
+#displays_dataset(dataset)
