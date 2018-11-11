@@ -82,7 +82,7 @@ def train_pca(input_folder, sample_size):
     pca = IncrementalPCA(n_components=100, batch_size=sample_size)
     for path in glob.glob(input_folder + "*.p"):
         label, pictures = load_data(path)
-        pictures = random.sample(pictures, sample_size)
+        pictures = random.sample(list(pictures), sample_size)
         pca.partial_fit(pictures)
         print("The PCA has been trained on {l}.".format(l=label), flush=True)
     save_data(pca, input_folder + "pca_{n}.pca".format(n=sample_size))
@@ -107,6 +107,32 @@ def compress_data(input_folder, pca, composant_number):
     print("Compression finished.", flush=True)
 
 #--------------------------------------------------------------------------------------------------
+# SCALER
+
+from sklearn.preprocessing import StandardScaler
+
+def train_scaler(input_folder, sample_size):
+    scaler = StandardScaler(with_std=False)
+    for path in glob.glob(input_folder + "*.p"):
+        label, pictures = load_data(path)
+        pictures = random.sample(pictures, sample_size)
+        scaler.partial_fit(pictures)
+        print("The Scaler has been trained on {l}.".format(l=label), flush=True)
+    save_data(scaler, input_folder + "scaler_{n}.scaler".format(n=sample_size))
+    print("Training finished.", flush=True)
+    return scaler
+
+def scale_data(input_folder, scaler):
+    os.makedirs(input_folder + "scaled/")
+    for path in glob.glob(input_folder + "*.p"):
+        label, pictures = load_data(path)
+        pictures = scaler.transform(pictures)
+        outpath = input_folder + "scaled/" + label + ".p"
+        save_data((label, pictures), outpath)
+        print("{l} has been scaled.".format(l=label), flush=True)
+    print("Scaling finished.", flush=True)
+
+#--------------------------------------------------------------------------------------------------
 # PLOT
 
 def displays_dataset(dataset):
@@ -127,18 +153,31 @@ sample_size = 1865  # sample size to train PCA and knn
 composant_number = 80  # number of composants kept after compression
 
 #preprocess_data(input_folder)
-#sample_size = split_data(input_folder + "preprocessed/", training_proportion)
+input_folder += "preprocessed/"
+#sample_size = split_data(input_folder, training_proportion)
+training_folder = input_folder + "training/"
+testing_folder = input_folder + "testing/"
 
-#pca = train_pca(input_folder + "preprocessed/" + "training/", sample_size)
-#pca = load_data(input_folder + "preprocessed/" + "training/" + "pca_{n}.pca".format(n=sample_size))
+# useless does not improve dataset
+#scaler = train_scaler(training_folder, sample_size)
+#scale_data(training_folder, scaler)
+#scale_data(testing_folder, scaler)
+#training_folder += "scaled/"
+#testing_folder += "scaled/"
+#del scaler
+
+#pca = train_pca(training_folder, sample_size)
+#pca = load_data(training_folder + "pca_{n}.pca".format(n=sample_size))
 #variance_explained_by(pca, composant_number)
+#compress_data(training_folder, pca, composant_number)
+#compress_data(testing_folder, pca, composant_number)
+training_folder += "compressed/"
+testing_folder += "compressed/"
+#del pca
 
-#compress_data(input_folder + "preprocessed/" + "training/", pca, composant_number)
-#dataset = fuse_dataset(input_folder + "preprocessed/" + "training/" + "compressed/")
-#dataset = load_data(input_folder + "preprocessed/" + "training/" + "compressed/" + "dataset.pfull")
-
-#compress_data(input_folder + "preprocessed/" + "testing/", pca, composant_number)
-#dataset = fuse_dataset(input_folder + "preprocessed/" + "testing/" + "compressed/")
-#dataset = load_data(input_folder + "preprocessed/" + "testing/" + "compressed/" + "dataset.pfull")
+dataset = fuse_dataset(training_folder)
+#dataset = load_data(training_folder + "dataset.pfull")
+#dataset = fuse_dataset(testing_folder)
+#dataset = load_data(testing_folder + "dataset.pfull")
 
 #displays_dataset(dataset)

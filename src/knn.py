@@ -94,13 +94,45 @@ test_sample_size = 467
 trainset = load_data(input_folder + "training/" + "compressed/" + "dataset.pfull")
 #train_sample_size = max_sample_size(trainset)
 trainlabels, trainpoints = extract_trainset(trainset, train_sample_size)
+del trainset
 
 testset = load_data(input_folder + "testing/" + "compressed/" + "dataset.pfull")
 #test_sample_size = max_sample_size(testset)
 testlabels, testpoints = extract_trainset(testset, test_sample_size)
+del testset
 
-max_neighbours_number = 50
-max_axe_number = 80
-scores, neigbours, axes = cross_validate(input_folder, max_neighbours_number, max_axe_number,
-                                         trainlabels, trainpoints, testlabels, testpoints)
+#max_neighbours_number = 50
+#max_axe_number = 80
+#scores, neigbours, axes = cross_validate(input_folder, max_neighbours_number, max_axe_number,
+#                                         trainlabels, trainpoints, testlabels, testpoints)
 #scores, neigbours, axes = load_data(input_folder + "model/" + "ska.scores")
+
+#--------------------------------------------------------------------------------------------------
+# grid search
+
+from sklearn.model_selection import GridSearchCV
+from sklearn.pipeline import Pipeline
+from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score, classification_report, confusion_matrix
+
+
+class Crop():
+    axis_number = 1
+    def fit(self, X, y=None):
+        return self
+    def transform(self, X):
+        return crop_axis(X, self.axis_number)
+    def set_params(self, axis_number):
+        self.axis_number = axis_number
+        return self
+
+
+parameters = dict(knn__n_neighbors=range(1,50,2), crop__axis_number=range(2,100))
+classifier = Pipeline([('crop',Crop()), ('knn',KNeighborsClassifier())])
+gridSearch = GridSearchCV(classifier, parameters, cv=3, scoring='precision_weighted', verbose=2)
+gridSearch.fit(trainpoints, trainlabels)
+
+bestparam = gridSearch.best_params_
+bestscore = gridSearch.best_score_
+score = gridSearch.score(testpoints, testlabels)
+print("The best score is {bs} ({s} on test set) which was reached at {p}.".format(bs=bestscore, s=score, p=bestparam))
+#The best score is 0.5492849131003329 (0.5654278291654744 on test set) which was reached at {'crop__axis_number': 80, 'knn__n_neighbors': 35}.
