@@ -1,40 +1,39 @@
 # Chromotypage
 
-# Pipeline
+Using deep-learning and the fast.ai library to classify chromosome pictures.
 
-## Classification
+## Process
 
-- adjust histogram for better contrast
-- rescale pictures to identical size
-- run PCA to reduce dimensions
-- classify with KNN
+- I load the pictures and take their negativ (let me fill spaces with black during data augmentation)
+- I split into a 80%/20% training/testing set
+- I deform the pictures so that they fit into a 224x224 square
+- I use data augmentation on the training set (playig with scale, vertical flip, rotation, etc)
+- I normalize the pictures (mean/std)
+- I train a resnet34 (using the structure but not reusing weights)
 
-## Training
+## Notes
 
-- adjust histogram and rescale all pictures
-- split picture into training dataset (80%) and testing dataset (20%)
-- train PCA and save reduced pictures
-- train KNN and crossvalidate to identify optimal K and composant number
+most of the time, I am underfitting (!)
+this is probably due to a strong data augmentation
 
-# Task
+## Things that did not work
 
-- Given a picture, returns one of the 24 possible labels.
-- Given a picture, return one of the 24 possible labels or one of the extra (q or phi).
+- using a jpg or png format does not seem to impact the accuracy
+- doing augmentation with horizontal flipping had a very bad effect on the training
+- resizing pictures by adding properly sized borders so that they are not deformed degraded the learning (i am unsure why)
+- improving the contrast of the pictures before training had no effect (the network is proably able to do that without my help)
+- larger batch size reduce computing time but seem to also reduce accuracy (default works well)
+- learning with increasing picture size (64->128->224) seem not to be helpful as the scores did not transfer from a size to another (this might not be true anymore) but learning at a reduced size goes much faster with little impact on the accuracy
+- transfer learning with the reset weights seem to not be useful (it makes sense as the pictures look nothing like traditional photographs)
 
-Validation of the algorithm will be done on 10% of the dataset (using data that was not given for training).
-
-*Warning* : The data are not balanced between labels and, in particular, there are less data for the 23/24 labels and a lot less data for the anomalies.
-
-# Algorithm
-
-Something similar to [how-to-get-97-percent-on-MNIST-with-KNN](https://steven.codes/blog/ml/how-to-get-97-percent-on-MNIST-with-KNN/) :
-- take the png picture
-- center them in a rectangle of given size (use center of mass or just center of picture ?)
-- adjust the contrast
-- perform a PCA to reduce the dimensionality (and vizualize the result)
-- use the k nearest neigbours algorithm to classify the data
-
-We can optimize the number of dimension kep and the number of neigbours.
+- resnet underfits while xresnet overfits but, otherwise, it is unclear wether xresnet is better
+- LabelSmoothingCrossEntropy (which is good for noisy labels) seem to lead to faster convergence (should test with resnet)
 
 
+## Todo
 
+- try a larger resnet
+- build a nice predict function
+- test loss_func=LabelSmoothingCrossEntropy
+- retry increasing image size
+- what if i do a single training run of 20 cycles ?
