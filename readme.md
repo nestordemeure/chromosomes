@@ -13,23 +13,26 @@ Using deep-learning and the fast.ai library to classify chromosome pictures.
 
 ## Things that did not work
 
-### Failures
-
-- doing augmentation with horizontal flipping had a very bad effect on the training
-- resizing pictures by adding properly sized borders so that they are not deformed degraded the learning (i am unsure why)
-- larger batch size reduce computing time but seem to also reduce accuracy (default works well)
-
 ### No effect
+
+Some of those things might be good ideas that have no effect due to the difficulty of the task.
 
 - using a jpg or png format does not seem to impact the accuracy
 - improving the contrast of the pictures before training had no effect (the network is proably able to do that without my help)
 - learning with increasing picture size (64->128->224) seem not to be helpful as the scores did not transfer from a size to another (this might not be true anymore) but learning at a reduced size goes much faster with little impact on the accuracy
 - transfer learning with the reset weights seem to not be useful (it makes sense as the pictures look nothing like traditional photographs)
-- resnet underfits while xresnet and mxresnet overfits but, otherwise, it is unclear wether xresnet is better
+- resnet underfits while xresnet and mxresnet overfits but, otherwise, it is unclear wether xresnet is better and it is sensibly slower
 - the Ranger optimizer had no visible effect
+
+### Detrimental
+
+- doing augmentation with horizontal flipping had a very bad effect on the training
+- resizing pictures by adding properly sized borders so that they are not deformed degraded the learning (i am unsure why)
+- larger batch size reduce computing time but seem to also reduce accuracy (default works well)
 
 ## Todo
 
 - try a larger resnet
 - build a nice predict function
+- calibrate the model probabilities
 - update to fast.ai V2

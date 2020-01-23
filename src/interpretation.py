@@ -1,5 +1,6 @@
 from fastai.vision import *
 from fastai.metrics import error_rate
+from tools.temperature_scaling import ModelWithTemperature
 
 #------------------------------------------------------------------------------
 # DATA IMPORTATION
@@ -32,7 +33,8 @@ data = ImageDataBunch.create_from_ll(src, ds_tfms=tfms, size=size, num_workers=8
 
 # define model
 learn = cnn_learner(data, models.resnet34, pretrained=False, metrics=accuracy, loss_func=LabelSmoothingCrossEntropy())
-learn.load("smooth_res34")
+learn.model = torch.nn.Sequential(ModelWithTemperature(learn.model), torch.nn.Softmax())
+learn.load("calibrated_smooth_res34")
 
 #------------------------------------------------------------------------------
 # INTERPRETATION
@@ -52,7 +54,7 @@ def _plot_batch(self, k, figsize=(12,12), heatmap:bool=False, heatmap_thresh:int
                 alpha:float=0.6, cmap:str="magma", show_text:bool=True,
                 return_fig:bool=None)->Optional[plt.Figure]:
     "Show images in `top_losses` along with their prediction, actual, loss, and probability of actual class."
-    if heatmap is None: heatmap = _test_cnn(self.learn.model)
+    if heatmap is None: heatmap = test_cnn(self.learn.model)
     size_validDataset = len(self.data.dl(self.ds_type))
     tl_idx = torch.LongTensor(k).random_(0, size_validDataset-1)
     classes = self.data.classes
